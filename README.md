@@ -14,19 +14,19 @@ pip install pg-heartbeat
 from sqlmodel import create_engine
 from pg_heartbeat import PgHeartbeat, create_tables
 
-engine = create_engine("sqlite:///heartbeats.db")
+engine = create_engine("postgresql://user:pass@localhost/mydb")
 
 # Create tables once at app startup
 create_tables(engine)
 
 # Create a client
-db = PgHeartbeat(engine, service="my-service")
+db = PgHeartbeat(engine, service="my-service", version="1.0.0")
 
 # Send a heartbeat
 db.beat()
 
 # Send with details
-db.beat(status="ok", message="Processed 42 items", metadata={"version": "1.2.3"})
+db.beat(status="ok", message="Processed 42 items", metadata={"queue_depth": 12})
 
 # Get the latest heartbeat
 latest = db.latest()
@@ -44,22 +44,29 @@ You can query or record heartbeats for a different service by passing `service` 
 ```python
 db = PgHeartbeat(engine, service="api-server")
 db.beat()                              # records for "api-server"
-db.latest(service="worker")            # checks "worker" instead
+db.latest(service="worker")            # queries "worker" instead
 ```
 
 ## API
 
 ### `create_tables(engine_or_url, echo=False)`
 
-Create the heartbeat tables. Call once at app startup. Accepts a database URL or an existing SQLAlchemy `Engine`.
+Create the heartbeat tables. Call once at app startup. Accepts a database URL string or an existing SQLAlchemy `Engine`.
 
-### `PgHeartbeat(engine, service)`
+### `PgHeartbeat(engine, service, version=None)`
 
 Create a client. Accepts a SQLAlchemy `Engine`.
 
-### `db.beat(service=None, status="ok", message=None, metadata=None)`
+The following fields are auto-populated on every `beat()` call:
+- **hostname** — looked up via `socket.gethostname()` at init
+- **version** — set from the constructor argument
+- **uptime_seconds** — seconds since the `PgHeartbeat` instance was created
 
-Record a heartbeat. Returns the `Heartbeat` row.
+### `db.beat(service=None, status="ok", message=None, hostname=None, version=None, uptime_seconds=None, metadata=None)`
+
+Record a heartbeat. Returns the `Heartbeat` row. Auto-populated fields (`hostname`, `version`, `uptime_seconds`) can be overridden per call.
+
+`metadata` accepts a dict that is stored as JSON.
 
 ### `db.latest(service=None)`
 
