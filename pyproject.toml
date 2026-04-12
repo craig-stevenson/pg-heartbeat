@@ -29,9 +29,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/craig/pg-heartbeat"
-Repository = "https://github.com/craig/pg-heartbeat"
-Issues = "https://github.com/craig/pg-heartbeat/issues"
+Homepage = "https://github.com/craig-stevenson/pg-heartbeat"
+Repository = "https://github.com/craig-stevenson/pg-heartbeat"
+Issues = "https://github.com/craig-stevenson/pg-heartbeat/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pg_heartbeat"]
