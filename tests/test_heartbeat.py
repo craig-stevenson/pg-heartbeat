@@ -2,13 +2,13 @@ import json
 import time
 
 from sqlmodel import create_engine
-from pg_heartbeat import PgHeartbeat, create_tables
+from pg_heartbeat import HeartbeatHandle, create_tables
 
 
-def _setup(service: str = "svc") -> PgHeartbeat:
+def _setup(service: str = "svc") -> HeartbeatHandle:
     engine = create_engine("sqlite://")
     create_tables(engine)
-    return PgHeartbeat(engine, service=service)
+    return HeartbeatHandle(engine, service=service)
 
 
 def test_beat_and_latest():

@@ -12,7 +12,7 @@ pip install pg-heartbeat
 
 ```python
 from sqlmodel import create_engine
-from pg_heartbeat import PgHeartbeat, create_tables
+from pg_heartbeat import HeartbeatHandle, create_tables
 
 engine = create_engine("postgresql://user:pass@localhost/mydb")
 
@@ -20,7 +20,7 @@ engine = create_engine("postgresql://user:pass@localhost/mydb")
 create_tables(engine)
 
 # Create a client
-db = PgHeartbeat(engine, service="my-service", version="1.0.0")
+db = HeartbeatHandle(engine, service="my-service", version="1.0.0")
 
 # Send a heartbeat
 db.beat()
@@ -42,7 +42,7 @@ for hb in db.history(limit=10):
 You can query or record heartbeats for a different service by passing `service` to any method:
 
 ```python
-db = PgHeartbeat(engine, service="api-server")
+db = HeartbeatHandle(engine, service="api-server")
 db.beat()                              # records for "api-server"
 db.latest(service="worker")            # queries "worker" instead
 ```
@@ -53,14 +53,14 @@ db.latest(service="worker")            # queries "worker" instead
 
 Create the heartbeat tables. Call once at app startup. Accepts a database URL string or an existing SQLAlchemy `Engine`.
 
-### `PgHeartbeat(engine, service, version=None)`
+### `HeartbeatHandle(engine, service, version=None)`
 
 Create a client. Accepts a SQLAlchemy `Engine`.
 
 The following fields are auto-populated on every `beat()` call:
 - **hostname** — looked up via `socket.gethostname()` at init
 - **version** — set from the constructor argument
-- **uptime_seconds** — seconds since the `PgHeartbeat` instance was created
+- **uptime_seconds** — seconds since the `HeartbeatHandle` instance was created
 
 ### `db.beat(service=None, status="ok", message=None, hostname=None, version=None, uptime_seconds=None, metadata=None)`
 

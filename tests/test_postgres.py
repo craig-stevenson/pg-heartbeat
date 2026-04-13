@@ -5,7 +5,7 @@ import time
 import pytest
 from sqlmodel import create_engine
 
-from pg_heartbeat import PgHeartbeat, create_tables
+from pg_heartbeat import HeartbeatHandle, create_tables
 
 CONTAINER_NAME = "pg_heartbeat_test"
 PG_USER = "testuser"
@@ -53,7 +53,7 @@ def pg_engine():
 
 
 def test_beat_and_latest(pg_engine):
-    db = PgHeartbeat(pg_engine, service="pg-api")
+    db = HeartbeatHandle(pg_engine, service="pg-api")
     db.beat(status="ok", message="hello postgres")
     hb = db.latest()
     assert hb is not None
@@ -64,7 +64,7 @@ def test_beat_and_latest(pg_engine):
 
 
 def test_history(pg_engine):
-    db = PgHeartbeat(pg_engine, service="pg-history")
+    db = HeartbeatHandle(pg_engine, service="pg-history")
     db.beat(message="first")
     db.beat(message="second")
     db.beat(message="third")
@@ -74,7 +74,7 @@ def test_history(pg_engine):
 
 
 def test_metadata_round_trip(pg_engine):
-    db = PgHeartbeat(pg_engine, service="pg-meta")
+    db = HeartbeatHandle(pg_engine, service="pg-meta")
     input_metadata = {"version": "1.2.3", "uptime": 42, "tags": ["web", "prod"]}
     db.beat(metadata=input_metadata)
     hb = db.latest()
@@ -84,7 +84,7 @@ def test_metadata_round_trip(pg_engine):
 
 
 def test_version_and_uptime(pg_engine):
-    db = PgHeartbeat(pg_engine, service="pg-version", version="2.0.0")
+    db = HeartbeatHandle(pg_engine, service="pg-version", version="2.0.0")
     db.beat()
     hb = db.latest()
     assert hb is not None
@@ -93,7 +93,7 @@ def test_version_and_uptime(pg_engine):
 
 
 def test_service_override(pg_engine):
-    db = PgHeartbeat(pg_engine, service="pg-default")
+    db = HeartbeatHandle(pg_engine, service="pg-default")
     db.beat()
     db.beat(service="pg-other")
     assert db.latest().service == "pg-default"
@@ -101,5 +101,5 @@ def test_service_override(pg_engine):
 
 
 def test_latest_returns_none_for_unknown(pg_engine):
-    db = PgHeartbeat(pg_engine, service="pg-ghost")
+    db = HeartbeatHandle(pg_engine, service="pg-ghost")
     assert db.latest() is None

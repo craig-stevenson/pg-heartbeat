@@ -1,4 +1,4 @@
 from .models import Heartbeat
-from .client import PgHeartbeat, create_tables
+from .client import HeartbeatHandle, create_tables
 
-__all__ = ["Heartbeat", "PgHeartbeat", "create_tables"]
+__all__ = ["Heartbeat", "HeartbeatHandle", "create_tables"]

@@ -20,7 +20,7 @@ def create_tables(engine_or_url: Engine | str, echo: bool = False) -> None:
     SQLModel.metadata.create_all(engine)
 
 
-class PgHeartbeat:
+class HeartbeatHandle:
     """Simple client for pushing and querying heartbeat records."""
 
     def __init__(self, engine: Engine, service: str, version: Optional[str] = None) -> None:
