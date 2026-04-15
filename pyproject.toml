@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pg-heartbeat"
-version = "0.2.0"
+version = "0.3.0"
 description = "A simple way for Python applications to push heartbeat info to a SQL database"
 readme = "README.md"
 license = "MIT"

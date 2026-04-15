@@ -7,6 +7,7 @@ from sqlmodel import Field, SQLModel
 class Heartbeat(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     service: str = Field(index=True)
+    instance_id: Optional[str] = Field(default=None, index=True)
     status: str = Field(default="ok")
     message: Optional[str] = None
     hostname: Optional[str] = None

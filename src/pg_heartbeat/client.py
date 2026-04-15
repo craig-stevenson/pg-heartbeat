@@ -23,10 +23,11 @@ def create_tables(engine_or_url: Engine | str, echo: bool = False) -> None:
 class HeartbeatHandle:
     """Simple client for pushing and querying heartbeat records."""
 
-    def __init__(self, engine: Engine, service: str, version: Optional[str] = None) -> None:
+    def __init__(self, engine: Engine, service: str, version: Optional[str] = None, instance_id: Optional[str] = None) -> None:
         self.engine = engine
         self.service = service
         self.version = version
+        self.instance_id = instance_id
         self.hostname = socket.gethostname()
         self._started_at = datetime.now(timezone.utc)
 
@@ -37,6 +38,7 @@ class HeartbeatHandle:
         message: Optional[str] = None,
         hostname: Optional[str] = None,
         version: Optional[str] = None,
+        instance_id: Optional[str] = None,
         uptime_seconds: Optional[float] = None,
         metadata: Optional[dict[str, Any]] = None,
     ) -> Heartbeat:
@@ -44,6 +46,7 @@ class HeartbeatHandle:
         service = service or self.service
         heartbeat = Heartbeat(
             service=service,
+            instance_id=instance_id or self.instance_id,
             status=status,
             message=message,
             hostname=hostname or self.hostname,
@@ -68,6 +71,8 @@ class HeartbeatHandle:
                 .order_by(Heartbeat.timestamp.desc())  # type: ignore[union-attr]
                 .limit(1)
             )
+            if self.instance_id:
+                statement = statement.where(Heartbeat.instance_id == self.instance_id)
             return session.exec(statement).first()
 
     def history(
@@ -85,6 +90,8 @@ class HeartbeatHandle:
                 .order_by(Heartbeat.timestamp.desc())  # type: ignore[union-attr]
                 .limit(limit)
             )
+            if self.instance_id:
+                statement = statement.where(Heartbeat.instance_id == self.instance_id)
             if since:
                 statement = statement.where(Heartbeat.timestamp >= since)
             return session.exec(statement).all()

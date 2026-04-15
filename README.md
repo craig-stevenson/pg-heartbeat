@@ -47,22 +47,34 @@ db.beat()                              # records for "api-server"
 db.latest(service="worker")            # queries "worker" instead
 ```
 
+### Multiple instances of the same service
+
+Use `instance_id` to distinguish replicas or containers:
+
+```python
+db = HeartbeatHandle(engine, service="my-api", instance_id="replica-1")
+db.beat()          # tagged with instance_id="replica-1"
+db.latest()        # returns latest for "my-api" + "replica-1" only
+```
+
 ## API
 
 ### `create_tables(engine_or_url, echo=False)`
 
 Create the heartbeat tables. Call once at app startup. Accepts a database URL string or an existing SQLAlchemy `Engine`.
 
-### `HeartbeatHandle(engine, service, version=None)`
+### `HeartbeatHandle(engine, service, version=None, instance_id=None)`
 
 Create a client. Accepts a SQLAlchemy `Engine`.
+
+- **instance_id** — optional identifier to distinguish multiple instances of the same service (e.g. replica ID, container ID). When set, `latest()` and `history()` are scoped to that instance.
 
 The following fields are auto-populated on every `beat()` call:
 - **hostname** — looked up via `socket.gethostname()` at init
 - **version** — set from the constructor argument
 - **uptime_seconds** — seconds since the `HeartbeatHandle` instance was created
 
-### `db.beat(service=None, status="ok", message=None, hostname=None, version=None, uptime_seconds=None, metadata=None)`
+### `db.beat(service=None, status="ok", message=None, hostname=None, version=None, instance_id=None, uptime_seconds=None, metadata=None)`
 
 Record a heartbeat. Returns the `Heartbeat` row. Auto-populated fields (`hostname`, `version`, `uptime_seconds`) can be overridden per call.
 

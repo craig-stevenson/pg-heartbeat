@@ -5,10 +5,15 @@ from sqlmodel import create_engine
 from pg_heartbeat import HeartbeatHandle, create_tables
 
 
-def _setup(service: str = "svc") -> HeartbeatHandle:
+def _make_engine():
     engine = create_engine("sqlite://")
     create_tables(engine)
-    return HeartbeatHandle(engine, service=service)
+    return engine
+
+
+def _setup(service: str = "svc", **kwargs) -> HeartbeatHandle:
+    engine = _make_engine()
+    return HeartbeatHandle(engine, service=service, **kwargs)
 
 
 def test_beat_and_latest():
@@ -53,3 +58,17 @@ def test_service_override():
     db.beat(service="other-svc")
     assert db.latest().service == "default-svc"
     assert db.latest(service="other-svc").service == "other-svc"
+
+
+def test_instance_id():
+    engine = _make_engine()
+    db1 = HeartbeatHandle(engine, service="my-api", instance_id="replica-1")
+    db2 = HeartbeatHandle(engine, service="my-api", instance_id="replica-2")
+    db1.beat(message="from replica 1")
+    db2.beat(message="from replica 2")
+    hb1 = db1.latest()
+    hb2 = db2.latest()
+    assert hb1.instance_id == "replica-1"
+    assert hb1.message == "from replica 1"
+    assert hb2.instance_id == "replica-2"
+    assert hb2.message == "from replica 2"
