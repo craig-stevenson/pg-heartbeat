@@ -103,3 +103,11 @@ def test_service_override(pg_engine):
 def test_latest_returns_none_for_unknown(pg_engine):
     db = HeartbeatHandle(pg_engine, service="pg-ghost")
     assert db.latest() is None
+
+
+def test_timestamp_is_timezone_aware(pg_engine):
+    db = HeartbeatHandle(pg_engine, service="pg-tz")
+    db.beat()
+    hb = db.latest()
+    assert hb is not None
+    assert hb.timestamp.tzinfo is not None

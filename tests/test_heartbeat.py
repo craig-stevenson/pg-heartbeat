@@ -72,3 +72,11 @@ def test_instance_id():
     assert hb1.message == "from replica 1"
     assert hb2.instance_id == "replica-2"
     assert hb2.message == "from replica 2"
+
+
+def test_timestamp_is_set():
+    db = _setup()
+    db.beat()
+    hb = db.latest()
+    assert hb is not None
+    assert hb.timestamp is not None
